@@ -72,11 +72,20 @@ class AuthController extends Controller
         }
     }
     public function logout(Request $request){
-        $request->user()->currentAccessToken()->delete();
-        return response()->json([
-            "message" => "Session eliminada correctamente",
-            "status" => 200
-        ], 200);
+        $token = JWTAuth::getToken();
+
+        if ($token) {
+            try {
+                JWTAuth::invalidate($token);
+                Auth::logout();
+
+                return response()->json(['message' => 'Logged out successfully'], 200);
+            } catch (\Exception $e) {
+                return response()->json(['message' => 'Failed to logout'], 400);
+            }
+        }
+
+        return response()->json(['message' => 'Token not provided'],400);
     }
 
 }
